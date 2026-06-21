@@ -83,7 +83,13 @@ enterprise-ai-infrastructure-architecture/
 │   ├── sla-slo-model.md
 │   └── cost-management.md
 ├── 07-demo-lab/
+│   ├── README.md
+│   ├── sample-prompts.md
+│   ├── test-cases.md
 │   └── synthetic-data/
+│       ├── fake-policy-doc.md
+│       ├── fake-network-standard.md
+│       └── fake-change-request.md
 ├── 08-diagrams/
 │   ├── enterprise-ai-reference-architecture.mmd
 │   ├── zero-trust-ai-flow.mmd
@@ -129,10 +135,10 @@ enterprise-ai-infrastructure-architecture/
 | Executive Brief | ✅ Complete |
 | Reference Architecture | ✅ Complete |
 | Security Governance | ✅ Complete |
-| Infrastructure as Code | 🔄 In Progress |
+| Infrastructure as Code | 🔄 Placeholder |
 | RAG Knowledge Architecture | ✅ Complete |
 | Operations & Observability | ✅ Complete |
-| Demo Lab | 🔄 In Progress |
+| Demo Lab | ✅ Complete |
 | Diagrams | ✅ Complete |
 | Portfolio Story | ✅ Complete |
 
