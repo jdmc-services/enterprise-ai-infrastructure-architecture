@@ -1,0 +1,87 @@
+# SD-WAN and AI Edge Architecture Diagram
+
+Paste the code block below into any Mermaid-compatible renderer.
+
+```mermaid
+flowchart TD
+    subgraph BRANCH["BRANCH OFFICES — SD-WAN Edge"]
+        B1[Branch User\nDevice + Posture Check]
+        B2[SD-WAN Edge Device\nApp-Aware Routing · QoS]
+    end
+
+    subgraph SDWAN["SD-WAN FABRIC"]
+        S1[SD-WAN Orchestrator\nCentralized Policy]
+        S2[Application Catalog\nAI Gateway Registered]
+        S3[QoS Policy\nAI Traffic Prioritized]
+        S4[SASE Policy Engine\nDevice Posture · CASB]
+    end
+
+    subgraph HUB["ENTERPRISE HUB — Data Center"]
+        H1[SD-WAN Hub\nTraffic Aggregation]
+        H2[AI Gateway\nAI-SVC-DMZ Zone]
+        H3[Firewall\nZone Policy Enforcement]
+    end
+
+    subgraph ONPREM["ON-PREMISE AI INFRASTRUCTURE"]
+        O1[RAG Engine\nAI-PROC Zone]
+        O2[Vector Database\nAI-DATA Zone]
+        O3[Ingestion Pipeline\nAI-INGEST Zone]
+        O4[Observability\nAI-MGMT Zone]
+    end
+
+    subgraph CLOUD["PRIVATE CLOUD AI ENVIRONMENT"]
+        C1[Private Cloud Interconnect\nDedicated Circuit]
+        C2[Cloud AI Processing Zone\nRAG · LLM]
+        C3[Cloud AI Data Zone\nVector DB Replica]
+    end
+
+    subgraph EXTERNAL["GOVERNED EXTERNAL LLM"]
+        E1[Egress Proxy\nFQDN Allowlist Enforced]
+        E2[Approved LLM Endpoint\nZero Data Retention · DHA Executed]
+    end
+
+    subgraph SECONDARY["SECONDARY SITE — HA"]
+        DR1[Standby AI Gateway]
+        DR2[Vector DB Replica\nAsync Replication]
+    end
+
+    B1 -->|Posture Check| B2
+    B2 -->|App-Aware Route| S1
+    S1 --- S2
+    S1 --- S3
+    S1 --- S4
+    S4 -->|Policy Enforced Traffic| H1
+    H1 --> H3
+    H3 --> H2
+    H2 -->|Validated Request| O1
+    O1 <-->|Read Only| O2
+    O3 -->|Write Only| O2
+    O1 -->|Log| O4
+    O4 -->|SIEM Forward| H3
+
+    H2 <-->|Private Interconnect| C1
+    C1 --> C2
+    C2 <--> C3
+
+    O1 -->|Governed Egress| E1
+    E1 -->|Approved FQDN Only| E2
+
+    H2 -.->|DNS Failover| DR1
+    O2 -.->|Async Replication| DR2
+
+    style BRANCH fill:#1e3a5f,stroke:#58a6ff,color:#c9d1d9
+    style SDWAN fill:#1e3a2f,stroke:#3fb950,color:#c9d1d9
+    style HUB fill:#3a1e1e,stroke:#f85149,color:#c9d1d9
+    style ONPREM fill:#2a1e3a,stroke:#bc8cff,color:#c9d1d9
+    style CLOUD fill:#1e2a3a,stroke:#58a6ff,color:#c9d1d9
+    style EXTERNAL fill:#3a2a1e,stroke:#f0883e,color:#c9d1d9
+    style SECONDARY fill:#1e3a2a,stroke:#3fb950,color:#c9d1d9
+```
+
+> **Diagram Notes:**
+> - Branch users always route through SD-WAN fabric to enterprise hub — never direct to AI data zones
+> - SASE policy engine enforces device posture and CASB controls at the edge
+> - Private cloud interconnect is a dedicated circuit — no public internet path for AI data
+> - External LLM access is strictly controlled via egress proxy with FQDN allowlist
+> - Secondary site provides HA via DNS failover and async vector DB replication
+> - All zone boundaries enforce firewall policy (deny-all default)
