@@ -1,0 +1,91 @@
+# Enterprise AI Reference Architecture Diagram
+
+Paste the code block below into any Mermaid-compatible renderer (GitHub markdown preview renders this automatically).
+
+```mermaid
+flowchart TD
+    subgraph USER["USER ACCESS LAYER"]
+        U1[Enterprise User\nBrowser / App Client]
+        U2[IdP / SSO / MFA\nAuthentication]
+        U3[RBAC Engine\nRole Token Assignment]
+    end
+
+    subgraph GATEWAY["AI GATEWAY — AI-SVC-DMZ Zone"]
+        G1[AI API Gateway\nRate Limiting · Routing]
+        G2[Prompt Inspection Engine\nInjection Detection · Input Validation]
+        G3[DLP Filter — Input\nSensitive Data Pattern Check]
+        G4[Session Logger\nRequest Metadata Capture]
+    end
+
+    subgraph RETRIEVAL["RAG RETRIEVAL ENGINE — AI-PROC Zone"]
+        R1[Query Embedding Service\nVector Representation]
+        R2[Metadata Filter Builder\nRBAC-Aligned Access Filter]
+        R3[Vector Database Search\nSemantic Similarity Query]
+        R4[Context Assembler\nChunk Ranking · Citation Prep]
+    end
+
+    subgraph DATA["AI DATA ZONE — AI-DATA Zone"]
+        D1[Vector Database\nApproved Enterprise Knowledge Store]
+        D2[Document Metadata Index\nClassification · Owner · Version]
+        D3[Raw Document Store\nSource-of-Truth Archives]
+    end
+
+    subgraph INGEST["DOCUMENT INGESTION — AI-INGEST Zone"]
+        I1[Document Governance\nApproval Workflow Gate]
+        I2[Classification Engine\nData Sensitivity Tagging]
+        I3[Parser + Chunker\nDocument Processing]
+        I4[Embedding Loader\nVector Store Writer]
+    end
+
+    subgraph LLM["LLM INFERENCE — AI-PROC Zone"]
+        L1[System Prompt\nVersion-Controlled · Immutable]
+        L2[Approved LLM Endpoint\nPrivate or Governed API]
+        L3[Output Validator\nDLP · Quality · Confidence Scoring]
+        L4[Response Formatter\nCitation Inclusion · Disclaimer]
+    end
+
+    subgraph OBS["OBSERVABILITY — AI-MGMT Zone"]
+        O1[Structured Log Aggregator]
+        O2[Enterprise SIEM\nCorrelation · Alerting · Audit]
+        O3[Metrics and Tracing Platform]
+        O4[Observability Dashboard]
+    end
+
+    subgraph NET["NETWORK FOUNDATION"]
+        N1[VLAN Segmentation\nAI-SVC-DMZ · AI-PROC · AI-DATA · AI-MGMT]
+        N2[Firewall Zone Policy\nDeny-All Default · Permit by Exception]
+        N3[SD-WAN Edge\nBranch Connectivity]
+        N4[Private Cloud Interconnect]
+        N5[CLINICAL ZONE\nFULLY ISOLATED — NO AI CONNECTIVITY]
+    end
+
+    U1 -->|HTTPS + Session| U2
+    U2 -->|Authenticated Session| U3
+    U3 -->|RBAC Token| G1
+    G1 --> G2
+    G2 --> G3
+    G3 --> G4
+    G4 -->|Validated Request| R1
+    R1 --> R2
+    R2 -->|Query + Filter| R3
+    R3 -->|Authorized Chunks| R4
+    R4 -->|Context Payload| L1
+    R3 <-->|Vector Search Pre-filtered| D1
+    D1 --- D2
+    D1 --- D3
+    I1 --> I2
+    I2 --> I3
+    I3 --> I4
+    I4 -->|Write Only| D1
+    L1 --> L2
+    L2 -->|Generated Response| L3
+    L3 --> L4
+    L4 -->|Validated Response + Citations| U1
+    G4 -->|Structured Log| O1
+    R4 -->|Retrieval Log| O1
+    L3 -->|Output Log| O1
+    O1 --> O2
+    O1 --> O3
+    O3 --> O4
+    N2 -.-|DENY ALL TRAFFIC| N5
+```
