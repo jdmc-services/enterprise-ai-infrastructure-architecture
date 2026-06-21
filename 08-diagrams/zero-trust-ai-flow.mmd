@@ -1,0 +1,96 @@
+# Zero-Trust AI Access Flow Diagram
+
+Paste the code block below into any Mermaid-compatible renderer.
+
+```mermaid
+flowchart TD
+    subgraph USER["USER — Untrusted Zone"]
+        U1[Enterprise User\nAny Location · Any Device]
+    end
+
+    subgraph VERIFY["ZERO-TRUST VERIFICATION LAYER"]
+        V1{Device\nCompliant?}
+        V2{MFA\nVerified?}
+        V3{Role\nAuthorized?}
+        V4{Risk Score\nAcceptable?}
+        V5[Access Token Issued\nWith RBAC Claims]
+        DENY[❌ ACCESS DENIED\nLogged to SIEM]
+    end
+
+    subgraph PEP["POLICY ENFORCEMENT POINT — AI Gateway"]
+        P1{Token\nValid?}
+        P2[Prompt Inspection\nInjection Detection]
+        P3[Rate Limit Check\nPer User · Per Role]
+        P4[DLP Filter\nInput Scan]
+        P5[Request Logger\nIdentity + Context]
+        BLOCK[❌ REQUEST BLOCKED\nLogged to SIEM]
+    end
+
+    subgraph RAG["RAG ENGINE — AI Processing Zone"]
+        R1[Query Embedding]
+        R2{RBAC Metadata\nFilter Applied?}
+        R3[Vector Search\nAuthorized Docs Only]
+        R4[Context Assembly\nCitation Prep]
+        RDENY[❌ RETRIEVAL DENIED\nLogged to SIEM]
+    end
+
+    subgraph LLM["LLM INFERENCE — AI Processing Zone"]
+        L1[System Prompt\nImmutable · Version Controlled]
+        L2[LLM Endpoint\nPrivate · Governed]
+        L3[Output Validation\nDLP · Anomaly · Quality]
+    end
+
+    subgraph LOG["CONTINUOUS VERIFICATION — AI-MGMT Zone"]
+        O1[Structured Log\nEvery Event]
+        O2[SIEM\nCorrelation · Alerting]
+        O3[Risk Score Engine\nBehavioral Analytics]
+    end
+
+    U1 -->|Access Request| V1
+    V1 -->|No| DENY
+    V1 -->|Yes| V2
+    V2 -->|No| DENY
+    V2 -->|Yes| V3
+    V3 -->|No| DENY
+    V3 -->|Yes| V4
+    V4 -->|No| DENY
+    V4 -->|Yes| V5
+
+    V5 -->|Token + Query| P1
+    P1 -->|Invalid| BLOCK
+    P1 -->|Valid| P2
+    P2 -->|Injection Detected| BLOCK
+    P2 -->|Clean| P3
+    P3 -->|Limit Exceeded| BLOCK
+    P3 -->|Within Limit| P4
+    P4 -->|Sensitive Data| BLOCK
+    P4 -->|Clean| P5
+    P5 -->|Validated Request| R1
+
+    R1 --> R2
+    R2 -->|Filter Missing| RDENY
+    R2 -->|Filter Applied| R3
+    R3 -->|Authorized Chunks| R4
+    R4 -->|Context + Query| L1
+
+    L1 --> L2
+    L2 -->|Response| L3
+    L3 -->|Validated Response + Citations| U1
+
+    DENY -->|Log Event| O1
+    BLOCK -->|Log Event| O1
+    RDENY -->|Log Event| O1
+    P5 -->|Request Log| O1
+    R4 -->|Retrieval Log| O1
+    L3 -->|Response Log| O1
+    O1 --> O2
+    O2 --> O3
+    O3 -->|Risk Score Update| V4
+```
+
+> **Diagram Notes:**
+> - Every denial point (❌) generates a SIEM log entry
+> - Risk score engine continuously updates user risk profile based on behavior
+> - RBAC metadata filter is applied as pre-filter — not post-retrieval
+> - Token validation occurs on EVERY request — not just session establishment
+> - Output validation is the final Zero-Trust checkpoint before response delivery
